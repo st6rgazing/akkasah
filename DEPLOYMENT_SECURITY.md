@@ -35,7 +35,7 @@ DEBUG=False
 ENVIRONMENT=production
 
 # Database (REQUIRED)
-DATABASE_URL=postgresql://username:password@localhost/akkasah_archive
+DATABASE_URL=postgresql+psycopg://username:password@localhost/akkasah_archive
 
 # CORS (REQUIRED)
 CORS_ORIGINS=["https://yourdomain.com"]
