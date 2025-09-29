@@ -137,3 +137,6 @@ temp/
 *.njsproj
 *.sln
 *.sw?
+ArchiveFiles/
+*.dmg
+*.pkg

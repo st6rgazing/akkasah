@@ -128,6 +128,98 @@ export const searchService = {
   }
 }
 
+// Archive Service
+export const archiveService = {
+  // Get all archive collections
+  getAllCollections: async (params = {}) => {
+    try {
+      console.log('Making API call to /archive/collections with params:', params)
+      const response = await api.get('/archive/collections', { params })
+      console.log('API response:', response)
+      console.log('API response data:', response.data)
+      // The backend returns data directly as the response, not wrapped in data property
+      // Check if response.data exists and is an array, otherwise use response directly
+      if (response.data && Array.isArray(response.data)) {
+        return response.data
+      } else if (Array.isArray(response)) {
+        return response
+      } else {
+        console.error('Unexpected response format:', response)
+        return []
+      }
+    } catch (error) {
+      console.error('Error fetching archive collections:', error)
+      return []
+    }
+  },
+
+  // Get collection by ID
+  getCollectionById: async (id) => {
+    try {
+      const response = await api.get(`/archive/collections/${id}`)
+      console.log('Collection response:', response)
+      console.log('Collection response data:', response.data)
+      // The backend returns data directly as the response, not wrapped in data property
+      // Check if response.data exists and has an id, otherwise use response directly
+      if (response.data && response.data.id) {
+        return response.data
+      } else if (response.id) {
+        return response
+      } else {
+        console.error('Unexpected response format:', response)
+        return null
+      }
+    } catch (error) {
+      console.error('Error fetching archive collection:', error)
+      return null
+    }
+  },
+
+  // Get series for a collection
+  getCollectionSeries: async (collectionId) => {
+    try {
+      const response = await api.get(`/archive/collections/${collectionId}/series`)
+      return response.data || response
+    } catch (error) {
+      console.error('Error fetching collection series:', error)
+      return []
+    }
+  },
+
+  // Get series by ID
+  getSeriesById: async (id) => {
+    try {
+      const response = await api.get(`/archive/series/${id}`)
+      return response.data || response
+    } catch (error) {
+      console.error('Error fetching series:', error)
+      return null
+    }
+  },
+
+  // Advanced search
+  search: async (params) => {
+    try {
+      const response = await api.get('/archive/search', { params })
+      return response.data
+    } catch (error) {
+      console.error('Error searching archive:', error)
+      return { collections: [], series: [], files: [], total_results: 0 }
+    }
+  },
+
+  // Get archive statistics
+  getStats: async () => {
+    try {
+      const response = await api.get('/archive/stats')
+      return response.data
+    } catch (error) {
+      console.error('Error fetching archive stats:', error)
+      return { total_collections: 0, total_series: 0, total_files: 0 }
+    }
+  }
+}
+
 // Mock data functions (for development)
 const getMockCollections = () => {
   return [

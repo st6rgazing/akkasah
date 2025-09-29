@@ -156,6 +156,79 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Archive Collections Section */}
+      <section className="py-16 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-primary-900 mb-4">
+              Archive Collections
+            </h2>
+            <p className="text-lg text-primary-600 max-w-2xl mx-auto">
+              Discover our comprehensive archive of historical photographs and archival materials from across the Middle East and North Africa.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow duration-300">
+              <div className="text-center">
+                <Archive className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-primary-900 mb-4">
+                  Browse Archive
+                </h3>
+                <p className="text-primary-600 mb-6">
+                  Explore our extensive collection of archival materials with detailed metadata and descriptions.
+                </p>
+                <Link
+                  to="/archive/collections"
+                  className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                >
+                  Browse Collections
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow duration-300">
+              <div className="text-center">
+                <Search className="h-16 w-16 text-green-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-primary-900 mb-4">
+                  Advanced Search
+                </h3>
+                <p className="text-primary-600 mb-6">
+                  Use our powerful search tools to find specific collections, series, and files with advanced filtering.
+                </p>
+                <Link
+                  to="/archive/search"
+                  className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors duration-200"
+                >
+                  Advanced Search
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow duration-300">
+              <div className="text-center">
+                <BookOpen className="h-16 w-16 text-purple-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-primary-900 mb-4">
+                  Research Tools
+                </h3>
+                <p className="text-primary-600 mb-6">
+                  Access detailed finding aids, metadata, and research tools for academic and professional use.
+                </p>
+                <Link
+                  to="/about"
+                  className="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors duration-200"
+                >
+                  Learn More
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Featured Collections */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

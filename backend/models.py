@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
@@ -66,3 +66,78 @@ class CollectionStats(Base):
     last_downloaded = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+# New models for archival data from EAD files
+
+class ArchiveCollection(Base):
+    """Archival collections from EAD files"""
+    __tablename__ = "archive_collections"
+
+    id = Column(Integer, primary_key=True, index=True)
+    unit_id = Column(String(50), nullable=False, unique=True, index=True)  # AD.MC.002
+    title = Column(String(500), nullable=False, index=True)
+    date_inclusive = Column(String(100), nullable=True)
+    date_normal = Column(String(100), nullable=True)
+    date_type = Column(String(50), nullable=True)
+    extent = Column(Text, nullable=True)
+    carrier = Column(Text, nullable=True)
+    abstract = Column(Text, nullable=True)
+    scope_content = Column(Text, nullable=True)
+    biographical_historical = Column(Text, nullable=True)
+    languages = Column(JSON, nullable=True)  # List of language objects
+    containers = Column(JSON, nullable=True)  # List of container objects
+    digital_objects = Column(JSON, nullable=True)  # List of digital object objects
+    repository = Column(String(255), nullable=True)
+    finding_aid_status = Column(String(50), nullable=True)
+    creation_date = Column(Text, nullable=True)
+    language_usage = Column(Text, nullable=True)
+    file_path = Column(String(500), nullable=True)
+    parsed_at = Column(DateTime(timezone=True), nullable=True)
+    is_public = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    series = relationship("ArchiveSeries", back_populates="collection", cascade="all, delete-orphan")
+
+
+class ArchiveSeries(Base):
+    """Series within archival collections"""
+    __tablename__ = "archive_series"
+
+    id = Column(Integer, primary_key=True, index=True)
+    collection_id = Column(Integer, ForeignKey("archive_collections.id"), nullable=False)
+    title = Column(String(500), nullable=False)
+    unit_id = Column(String(100), nullable=True)
+    date_inclusive = Column(String(100), nullable=True)
+    level = Column(String(50), default="series")
+    digital_objects = Column(JSON, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    collection = relationship("ArchiveCollection", back_populates="series")
+    files = relationship("ArchiveFile", back_populates="series", cascade="all, delete-orphan")
+
+
+class ArchiveFile(Base):
+    """Individual files within series"""
+    __tablename__ = "archive_files"
+
+    id = Column(Integer, primary_key=True, index=True)
+    series_id = Column(Integer, ForeignKey("archive_series.id"), nullable=False)
+    title = Column(String(500), nullable=True)
+    unit_id = Column(String(100), nullable=True)
+    date_creation = Column(String(100), nullable=True)
+    extent = Column(String(255), nullable=True)
+    dimensions = Column(String(255), nullable=True)
+    languages = Column(JSON, nullable=True)  # List of language objects
+    containers = Column(JSON, nullable=True)  # List of container objects
+    digital_objects = Column(JSON, nullable=True)  # List of digital object objects
+    level = Column(String(50), default="file")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    series = relationship("ArchiveSeries", back_populates="files")

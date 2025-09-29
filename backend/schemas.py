@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 # Base schemas
@@ -98,3 +98,77 @@ class ArchiveStats(BaseModel):
 # Collection detail with images
 class CollectionDetail(CollectionResponse):
     images: List[ImageResponse] = []
+
+
+# Archive Collection schemas
+class ArchiveCollectionBase(BaseModel):
+    unit_id: str = Field(..., max_length=50)
+    title: str = Field(..., max_length=500)
+    date_inclusive: Optional[str] = Field(None, max_length=100)
+    date_normal: Optional[str] = Field(None, max_length=100)
+    date_type: Optional[str] = Field(None, max_length=50)
+    extent: Optional[str] = None
+    carrier: Optional[str] = None
+    abstract: Optional[str] = None
+    scope_content: Optional[str] = None
+    biographical_historical: Optional[str] = None
+    languages: Optional[List[Dict[str, Any]]] = None
+    containers: Optional[List[Dict[str, Any]]] = None
+    digital_objects: Optional[List[Dict[str, Any]]] = None
+    repository: Optional[str] = Field(None, max_length=255)
+    finding_aid_status: Optional[str] = Field(None, max_length=50)
+    creation_date: Optional[str] = None
+    language_usage: Optional[str] = None
+    is_public: bool = True
+
+class ArchiveCollectionResponse(ArchiveCollectionBase):
+    id: int
+    file_path: Optional[str] = None
+    parsed_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    files: Optional[List[Dict[str, Any]]] = []
+
+    class Config:
+        from_attributes = True
+
+class ArchiveSeriesBase(BaseModel):
+    title: str = Field(..., max_length=500)
+    unit_id: Optional[str] = Field(None, max_length=100)
+    date_inclusive: Optional[str] = Field(None, max_length=100)
+    level: str = Field(default="series", max_length=50)
+
+class ArchiveSeriesResponse(ArchiveSeriesBase):
+    id: int
+    collection_id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+class ArchiveFileBase(BaseModel):
+    title: Optional[str] = Field(None, max_length=500)
+    unit_id: Optional[str] = Field(None, max_length=100)
+    date_creation: Optional[str] = Field(None, max_length=100)
+    extent: Optional[str] = Field(None, max_length=255)
+    dimensions: Optional[str] = Field(None, max_length=255)
+    languages: Optional[List[Dict[str, Any]]] = None
+    containers: Optional[List[Dict[str, Any]]] = None
+    level: str = Field(default="file", max_length=50)
+
+class ArchiveFileResponse(ArchiveFileBase):
+    id: int
+    series_id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+# Archive Collection detail with series and files
+class ArchiveCollectionDetail(ArchiveCollectionResponse):
+    series: List[ArchiveSeriesResponse] = []
+
+class ArchiveSeriesDetail(ArchiveSeriesResponse):
+    files: List[ArchiveFileResponse] = []

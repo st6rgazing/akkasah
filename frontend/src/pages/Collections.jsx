@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Filter, Camera, Calendar, ArrowRight } from 'lucide-react'
-import { collectionService } from '../services/api'
+import { Search, Filter, Camera, Calendar, ArrowRight, Archive } from 'lucide-react'
+import { collectionService, archiveService } from '../services/api'
 
 const Collections = () => {
-  const [collections, setCollections] = useState([])
+  const [archiveCollections, setArchiveCollections] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedPeriod, setSelectedPeriod] = useState('')
@@ -20,8 +20,13 @@ const Collections = () => {
   const fetchCollections = async () => {
     try {
       setLoading(true)
-      const data = await collectionService.getAllCollections()
-      setCollections(data)
+      console.log('Starting to fetch collections...')
+      const archiveData = await archiveService.getAllCollections()
+      console.log('Fetched archive data:', archiveData)
+      console.log('Number of collections:', archiveData?.length || 0)
+      console.log('Type of archiveData:', typeof archiveData)
+      console.log('Is array?', Array.isArray(archiveData))
+      setArchiveCollections(archiveData || [])
     } catch (error) {
       console.error('Error fetching collections:', error)
     } finally {
@@ -29,13 +34,79 @@ const Collections = () => {
     }
   }
 
-  const filteredCollections = collections.filter(collection => {
+  const filteredArchiveCollections = (archiveCollections || []).filter(collection => {
     const matchesSearch = collection.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         collection.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesPeriod = !selectedPeriod || collection.period === selectedPeriod
-    const matchesType = !selectedType || collection.type === selectedType
-    return matchesSearch && matchesPeriod && matchesType
+                         (collection.abstract && collection.abstract.toLowerCase().includes(searchQuery.toLowerCase()))
+    return matchesSearch
   })
+
+  console.log('Archive collections state:', archiveCollections)
+  console.log('Filtered collections:', filteredArchiveCollections)
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Unknown'
+    return dateString
+  }
+
+  const getLanguageText = (languages) => {
+    if (!languages || !Array.isArray(languages)) return 'Unknown'
+    return languages.map(lang => lang.text || lang).join(', ')
+  }
+
+  const getCollectionImage = (collection) => {
+    // First check if collection has digital objects
+    if (collection.digital_objects && collection.digital_objects.length > 0) {
+      // Prioritize thumbnail for fastest loading
+      const firstImage = collection.digital_objects.find(obj => 
+        obj.role === 'image-thumbnail' && obj.href && obj.href.includes('hdl.handle.net')
+      ) || collection.digital_objects.find(obj => 
+        obj.href && obj.href.includes('hdl.handle.net')
+      )
+      if (firstImage) {
+        return firstImage.href
+      }
+    }
+    
+    // If no collection-level images, check if we have files with images
+    if (collection.files && collection.files.length > 0) {
+      for (const file of collection.files) {
+        if (file.digital_objects && file.digital_objects.length > 0) {
+          const firstImage = file.digital_objects.find(obj => 
+            obj.role === 'image-thumbnail' && obj.href && obj.href.includes('hdl.handle.net')
+          ) || file.digital_objects.find(obj => 
+            obj.href && obj.href.includes('hdl.handle.net')
+          )
+          if (firstImage) {
+            return firstImage.href
+          }
+        }
+      }
+    }
+    
+    return null
+  }
+
+  const getAllCollectionImages = (collection) => {
+    const allImages = []
+    
+    // Add collection-level digital objects
+    if (collection.digital_objects && collection.digital_objects.length > 0) {
+      allImages.push(...collection.digital_objects)
+    }
+    
+    // Add file-level digital objects
+    if (collection.files && collection.files.length > 0) {
+      for (const file of collection.files) {
+        if (file.digital_objects && file.digital_objects.length > 0) {
+          allImages.push(...file.digital_objects)
+        }
+      }
+    }
+    
+    return allImages
+  }
+
+
 
   if (loading) {
     return (
@@ -63,6 +134,7 @@ const Collections = () => {
           </p>
         </div>
       </div>
+
 
       {/* Filters */}
       <div className="bg-white border-b border-primary-200">
@@ -115,50 +187,92 @@ const Collections = () => {
 
       {/* Collections Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {filteredCollections.length === 0 ? (
+        {filteredArchiveCollections.length === 0 ? (
           <div className="text-center py-12">
-            <Camera className="h-16 w-16 text-primary-300 mx-auto mb-4" />
+            <Archive className="h-16 w-16 text-primary-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-primary-900 mb-2">No collections found</h3>
             <p className="text-primary-600">Try adjusting your search criteria</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredCollections.map((collection) => (
-              <div key={collection.id} className="card group hover:shadow-lg transition-shadow duration-300">
-                <div className="aspect-w-16 aspect-h-12 bg-primary-200 rounded-t-xl">
-                  <div className="flex items-center justify-center bg-gradient-to-br from-primary-300 to-primary-400">
-                    <Camera className="h-16 w-16 text-primary-600" />
-                  </div>
+            {filteredArchiveCollections.map((collection) => {
+              const collectionImage = getCollectionImage(collection)
+              
+              return (
+                <div key={collection.id} className="card group hover:shadow-lg transition-shadow duration-300">
+                  <Link 
+                    to={`/archive/collections/${collection.id}`}
+                    className="block"
+                  >
+                    <div className="aspect-w-16 aspect-h-12 bg-primary-200 rounded-t-xl overflow-hidden">
+                      {collectionImage ? (
+                        <img 
+                          src={`https://images.weserv.nl/?url=${encodeURIComponent(collectionImage)}&w=250&h=180&fit=cover&q=95&f=webp`}
+                          alt={collection.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="eager"
+                          decoding="async"
+                          onError={(e) => {
+                            // Try direct URL as fallback
+                            e.target.src = collectionImage
+                            e.target.onError = (e2) => {
+                              e2.target.style.display = 'none'
+                              e2.target.nextSibling.style.display = 'flex'
+                            }
+                          }}
+                          onLoad={(e) => {
+                            e.target.nextSibling.style.display = 'none'
+                          }}
+                        />
+                      ) : null}
+                      <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-300 to-blue-400 ${collectionImage ? 'hidden' : 'flex'}`}>
+                        <Archive className="h-16 w-16 text-blue-600" />
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-blue-600">{formatDate(collection.date_inclusive)}</span>
+                        <span className="text-sm text-primary-500">{collection.unit_id}</span>
+                      </div>
+                      <h3 className="text-xl font-semibold text-primary-900 mb-3 group-hover:text-blue-600 transition-colors duration-200">
+                        {collection.title}
+                      </h3>
+                      <p className="text-primary-600 mb-4 line-clamp-3">
+                        {collection.abstract || 'Archive collection'}
+                      </p>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex space-x-2">
+                          <span className="text-sm text-primary-500 bg-blue-100 px-2 py-1 rounded">
+                            Archive
+                          </span>
+                        </div>
+                        <div className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+                          View Details
+                          <ArrowRight className="ml-1 h-4 w-4" />
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                  {collection.file_path && (
+                    <div className="px-6 pb-6">
+                      <a 
+                        href={`file://${collection.file_path}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                      >
+                        Finding Aid
+                      </a>
+                    </div>
+                  )}
                 </div>
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-accent-600">{collection.period}</span>
-                    <span className="text-sm text-primary-500">{collection.imageCount} images</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-primary-900 mb-3 group-hover:text-accent-600 transition-colors duration-200">
-                    {collection.title}
-                  </h3>
-                  <p className="text-primary-600 mb-4 line-clamp-3">
-                    {collection.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-primary-500 bg-primary-100 px-2 py-1 rounded">
-                      {collection.type}
-                    </span>
-                    <Link 
-                      to={`/collections/${collection.id}`}
-                      className="inline-flex items-center text-accent-600 hover:text-accent-700 font-medium"
-                    >
-                      View Collection
-                      <ArrowRight className="ml-1 h-4 w-4" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
+
     </div>
   )
 }
