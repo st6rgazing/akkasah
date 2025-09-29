@@ -7,6 +7,12 @@ import os
 # Database configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./akkasah_archive.db")
 
+# psycopg3 uses a different SQLAlchemy dialect identifier than psycopg2.
+# Automatically upgrade URLs that omit the driver so environments that
+# previously relied on the default continue to function without manual edits.
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+
 # Create engine
 engine = create_engine(
     DATABASE_URL,
