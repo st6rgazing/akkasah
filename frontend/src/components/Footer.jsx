@@ -1,5 +1,14 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { Camera, Mail, MapPin, Phone } from 'lucide-react'
+
+const quickLinks = [
+  { name: 'Collections', to: '/collections' },
+  { name: 'About', to: '/about' },
+  { name: 'Search', to: '/search' },
+  { name: 'FAQ', to: '/faq' },
+  { name: 'Contact', to: '/contact' },
+]
 
 const Footer = () => {
   return (
@@ -30,10 +39,16 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><a href="/collections" className="text-primary-300 hover:text-accent-400 transition-colors duration-200">Collections</a></li>
-              <li><a href="/about" className="text-primary-300 hover:text-accent-400 transition-colors duration-200">About</a></li>
-              <li><a href="/search" className="text-primary-300 hover:text-accent-400 transition-colors duration-200">Search</a></li>
-              <li><a href="#" className="text-primary-300 hover:text-accent-400 transition-colors duration-200">Research</a></li>
+              {quickLinks.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    to={link.to}
+                    className="text-primary-300 hover:text-accent-400 transition-colors duration-200"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
