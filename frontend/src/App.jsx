@@ -10,6 +10,8 @@ import CollectionDetail from './pages/CollectionDetail'
 import ArchiveCollections from './pages/ArchiveCollections'
 import ArchiveCollectionDetail from './pages/ArchiveCollectionDetail'
 import AdvancedSearch from './pages/AdvancedSearch'
+import Contact from './pages/Contact'
+import FAQ from './pages/FAQ'
 
 function App() {
   return (
@@ -26,6 +28,8 @@ function App() {
             <Route path="/archive/search" element={<AdvancedSearch />} />
             <Route path="/about" element={<About />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/faq" element={<FAQ />} />
           </Routes>
         </main>
         <Footer />
