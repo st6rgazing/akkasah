@@ -65,145 +65,159 @@ const Contact = () => {
   }
 
   return (
-    <div className="bg-white">
-      <section className="bg-primary-900 text-white py-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-sm uppercase tracking-widest text-accent-300 font-semibold">Contact Akkasah</p>
-          <h1 className="mt-4 text-4xl sm:text-5xl font-bold">We would love to hear from you</h1>
-          <p className="mt-6 text-lg text-primary-200 max-w-3xl">
-            Whether you are conducting research, planning a visit, or interested in collaboration, the Akkasah team is here to
-            help. Reach out using the details below or send us a message through the form.
+    <div className="bg-primary-50">
+      <section className="relative overflow-hidden bg-primary-900 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_55%)]" aria-hidden="true" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-28">
+          <p className="text-sm uppercase tracking-[0.35em] text-accent-200 font-semibold">Contact Akkasah</p>
+          <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">We would love to hear from you</h1>
+          <p className="mt-6 text-lg text-primary-100 max-w-3xl">
+            Whether you are conducting research, planning a visit, or interested in collaboration, the Akkasah team is here to help.
+            Reach out using the details below or send us a message through the form.
           </p>
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1 bg-white rounded-2xl shadow-xl border border-primary-100 p-8">
-            <h2 className="text-2xl font-semibold text-primary-900">Visit or call</h2>
-            <p className="mt-3 text-primary-600">
-              Connect with the archive team through the channel that works best for you. We respond to most messages within two
-              business days.
-            </p>
-
-            <div className="mt-8 space-y-6">
-              {contactChannels.map((channel) => (
-                <a
-                  key={channel.title}
-                  href={channel.link}
-                  className="flex items-start space-x-4 group"
-                >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 text-accent-600 group-hover:bg-accent-50 group-hover:text-accent-700 transition-colors duration-200">
-                    <channel.icon className="h-5 w-5" />
-                  </span>
-                  <span>
-                    <span className="block text-lg font-semibold text-primary-900">{channel.title}</span>
-                    <span className="mt-1 block text-sm text-primary-600">{channel.description}</span>
-                    <span className="mt-2 inline-flex items-center text-sm font-medium text-accent-600 group-hover:text-accent-700">
-                      {channel.actionLabel}
-                    </span>
-                  </span>
-                </a>
-              ))}
-            </div>
-
-            <div className="mt-10 pt-6 border-t border-primary-100">
-              <h3 className="text-lg font-semibold text-primary-900 flex items-center space-x-2">
-                <Clock className="h-5 w-5 text-accent-600" />
-                <span>Office hours</span>
-              </h3>
-              <dl className="mt-4 space-y-2">
-                {officeHours.map((entry) => (
-                  <div key={entry.day} className="flex justify-between text-sm text-primary-600">
-                    <dt className="font-medium text-primary-700">{entry.day}</dt>
-                    <dd>{entry.time}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          </div>
-
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-xl border border-primary-100 p-8">
-            <h2 className="text-2xl font-semibold text-primary-900 flex items-center">
-              <MessageCircle className="h-6 w-6 text-accent-600 mr-3" />
-              Send us a message
-            </h2>
-            <p className="mt-3 text-primary-600">
-              Complete the form and share as much detail as possible. We will review your message and follow up with next steps.
-            </p>
-
-            <form className="mt-8 grid grid-cols-1 gap-6" onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <label className="block">
-                  <span className="text-sm font-medium text-primary-700">Full name</span>
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    className="mt-2 block w-full rounded-lg border border-primary-200 bg-white px-4 py-3 text-primary-900 shadow-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-500"
-                    placeholder="Your name"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-sm font-medium text-primary-700">Email address</span>
-                  <input
-                    type="email"
-                    name="email"
-                    required
-                    className="mt-2 block w-full rounded-lg border border-primary-200 bg-white px-4 py-3 text-primary-900 shadow-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-500"
-                    placeholder="you@example.com"
-                  />
-                </label>
+      <section className="relative pb-20">
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-primary-900/90 to-transparent" aria-hidden="true" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 sm:-mt-16 lg:-mt-20">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.4fr]">
+            <div className="bg-white rounded-3xl shadow-2xl ring-1 ring-primary-100/80 p-8 sm:p-10 flex flex-col">
+              <div>
+                <h2 className="text-2xl font-semibold text-primary-900">Visit or call</h2>
+                <p className="mt-4 text-base text-primary-600 leading-relaxed">
+                  Connect with the archive team through the channel that works best for you. We respond to most messages within two
+                  business days.
+                </p>
               </div>
 
-              <label className="block">
-                <span className="text-sm font-medium text-primary-700">Enquiry type</span>
-                <select
-                  name="topic"
-                  required
-                  className="mt-2 block w-full rounded-lg border border-primary-200 bg-white px-4 py-3 text-primary-900 shadow-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-500"
-                  defaultValue=""
+              <div className="mt-8 space-y-4">
+                {contactChannels.map((channel) => (
+                  <a
+                    key={channel.title}
+                    href={channel.link}
+                    className="flex items-start gap-4 rounded-2xl border border-primary-100/70 bg-primary-50/60 px-5 py-4 transition-all duration-200 hover:border-accent-200 hover:bg-white hover:shadow-lg"
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-accent-600 shadow-sm">
+                      <channel.icon className="h-5 w-5" />
+                    </span>
+                    <span className="flex-1">
+                      <span className="block text-lg font-semibold text-primary-900">{channel.title}</span>
+                      <span className="mt-1 block text-sm text-primary-600 leading-snug">{channel.description}</span>
+                      <span className="mt-2 inline-flex items-center text-sm font-medium text-accent-600">
+                        {channel.actionLabel}
+                      </span>
+                    </span>
+                  </a>
+                ))}
+              </div>
+
+              <div className="mt-10 rounded-2xl bg-primary-50/80 p-6">
+                <h3 className="text-lg font-semibold text-primary-900 flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-accent-600 shadow-sm">
+                    <Clock className="h-5 w-5" />
+                  </span>
+                  <span>Office hours</span>
+                </h3>
+                <dl className="mt-5 space-y-3 text-sm text-primary-600">
+                  {officeHours.map((entry) => (
+                    <div key={entry.day} className="flex items-center justify-between rounded-lg bg-white px-4 py-2 shadow-sm">
+                      <dt className="font-medium text-primary-800">{entry.day}</dt>
+                      <dd>{entry.time}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-3xl shadow-2xl ring-1 ring-primary-100/80 p-8 sm:p-10">
+              <h2 className="text-2xl font-semibold text-primary-900 flex items-center">
+                <MessageCircle className="h-6 w-6 text-accent-600 mr-3" />
+                Send us a message
+              </h2>
+              <p className="mt-3 text-primary-600 leading-relaxed">
+                Complete the form and share as much detail as possible. We will review your message and follow up with next steps.
+              </p>
+
+              <form className="mt-8 grid grid-cols-1 gap-6" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <label className="block">
+                    <span className="text-sm font-medium text-primary-700">Full name</span>
+                    <input
+                      type="text"
+                      name="name"
+                      required
+                      className="mt-2 block w-full rounded-xl border border-primary-200 bg-white px-4 py-3 text-primary-900 shadow-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-500"
+                      placeholder="Your name"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-sm font-medium text-primary-700">Email address</span>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      className="mt-2 block w-full rounded-xl border border-primary-200 bg-white px-4 py-3 text-primary-900 shadow-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-500"
+                      placeholder="you@example.com"
+                    />
+                  </label>
+                </div>
+
+                <label className="block">
+                  <span className="text-sm font-medium text-primary-700">Enquiry type</span>
+                  <select
+                    name="topic"
+                    required
+                    className="mt-2 block w-full rounded-xl border border-primary-200 bg-white px-4 py-3 text-primary-900 shadow-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-500"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>
+                      Select an option
+                    </option>
+                    <option value="research">Research enquiry</option>
+                    <option value="visit">Plan a visit</option>
+                    <option value="partnership">Partnership enquiry</option>
+                    <option value="licensing">Image licensing</option>
+                    <option value="other">Something else</option>
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className="text-sm font-medium text-primary-700">Message</span>
+                  <textarea
+                    name="message"
+                    rows="5"
+                    required
+                    className="mt-2 block w-full rounded-xl border border-primary-200 bg-white px-4 py-3 text-primary-900 shadow-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-500"
+                    placeholder="Tell us more about how we can help"
+                  />
+                </label>
+
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center rounded-xl border border-transparent bg-accent-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-accent-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500"
                 >
-                  <option value="" disabled>
-                    Select an option
-                  </option>
-                  <option value="research">Research enquiry</option>
-                  <option value="visit">Plan a visit</option>
-                  <option value="partnership">Partnership enquiry</option>
-                  <option value="licensing">Image licensing</option>
-                  <option value="other">Something else</option>
-                </select>
-              </label>
+                  Submit message
+                </button>
 
-              <label className="block">
-                <span className="text-sm font-medium text-primary-700">Message</span>
-                <textarea
-                  name="message"
-                  rows="5"
-                  required
-                  className="mt-2 block w-full rounded-lg border border-primary-200 bg-white px-4 py-3 text-primary-900 shadow-sm focus:border-accent-500 focus:ring-2 focus:ring-accent-500"
-                  placeholder="Tell us more about how we can help"
-                />
-              </label>
-
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center rounded-lg border border-transparent bg-accent-600 px-6 py-3 text-base font-medium text-white transition-colors duration-200 hover:bg-accent-700"
-              >
-                Submit message
-              </button>
-
-              {formStatus.type === 'success' && (
-                <p className="rounded-lg bg-accent-50 px-4 py-3 text-sm text-accent-700">
-                  {formStatus.message}
-                </p>
-              )}
-            </form>
+                {formStatus.type === 'success' && (
+                  <p className="rounded-xl bg-accent-50 px-4 py-3 text-sm text-accent-700">
+                    {formStatus.message}
+                  </p>
+                )}
+              </form>
+            </div>
           </div>
         </div>
       </section>
 
-      <FAQSection faqs={faqs} description="Answers to common questions about connecting with the Akkasah archive." showContactCta />
+      <div className="mt-6 sm:mt-10 lg:mt-16">
+        <FAQSection
+          faqs={faqs}
+          description="Answers to common questions about connecting with the Akkasah archive."
+          showContactCta
+        />
+      </div>
     </div>
   )
 }
