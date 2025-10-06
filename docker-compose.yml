@@ -45,7 +45,7 @@ services:
       dockerfile: Dockerfile
     container_name: akkasah-backend
     environment:
-      - DATABASE_URL=postgresql://akkasah_user:${POSTGRES_PASSWORD:-akkasah_secure_password}@db:5432/akkasah_archive
+      - DATABASE_URL=postgresql+psycopg://akkasah_user:${POSTGRES_PASSWORD:-akkasah_secure_password}@db:5432/akkasah_archive
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=${SECRET_KEY:-your-super-secret-key-change-in-production-minimum-32-characters}
       - DEBUG=False

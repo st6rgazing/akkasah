@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Archive } from 'lucide-react'
 import { archiveService } from '../services/api'
 
 const AdvancedSearch = () => {
@@ -374,7 +375,7 @@ const AdvancedSearch = () => {
                 Search Results
               </h2>
               <p className="text-gray-600">
-                Found {results.total_results} results for "{searchParams.q}"
+                Found {results.total_results} results for &ldquo;{searchParams.q}&rdquo;
               </p>
             </div>
 
