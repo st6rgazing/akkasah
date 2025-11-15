@@ -1,33 +1,114 @@
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, Archive, BookOpen, Camera, ArrowRight } from 'lucide-react'
 import HeroCarousel from '../components/HeroCarousel'
 import historicalCollectionsImage from '../assets/historical_collections.jpg'
+import { archiveService } from '../services/api'
+import { COLLECTION_IMAGE_MAP } from '../constants/collectionImages'
+
+const FEATURED_COLLECTION_IDS = ['AD.MC.012', 'AD.MC.036', 'AD.MC.028']
 
 const Home = () => {
-  const featuredCollections = [
-    {
-      id: 1,
-      title: "Early Photography in the Holy Lands",
-      description: "A collection of 19th-century photographs documenting the Holy Lands",
-      imageCount: 1250,
-      period: "1850-1900"
-    },
-    {
-      id: 2,
-      title: "Ottoman Empire Portraits",
-      description: "Studio portraits and family photographs from the Ottoman period",
-      imageCount: 890,
-      period: "1870-1920"
-    },
-    {
-      id: 3,
-      title: "Egyptian Cinema Archive",
-      description: "Behind-the-scenes photographs from the golden age of Egyptian cinema",
-      imageCount: 2100,
-      period: "1940-1970"
+  const [archiveCollections, setArchiveCollections] = useState([])
+  const [featuredCollections, setFeaturedCollections] = useState([])
+  const [featuredLoading, setFeaturedLoading] = useState(true)
+  const [featuredError, setFeaturedError] = useState(null)
+
+  useEffect(() => {
+    const fetchCollections = async () => {
+      try {
+        setFeaturedLoading(true)
+        const archiveData = await archiveService.getAllCollections()
+        const collectionsData = Array.isArray(archiveData?.data)
+          ? archiveData.data
+          : Array.isArray(archiveData)
+            ? archiveData
+            : []
+        setArchiveCollections(collectionsData)
+
+        const normalizedMap = new Map()
+        collectionsData.forEach((collection) => {
+          if (!collection?.unit_id) return
+          normalizedMap.set(collection.unit_id.trim(), collection)
+          normalizedMap.set(collection.unit_id.replace(/_/g, '.').trim(), collection)
+        })
+
+        const curated = FEATURED_COLLECTION_IDS.map((unitId) => normalizedMap.get(unitId)).filter(Boolean)
+        setFeaturedCollections(curated)
+        setFeaturedError(null)
+      } catch (error) {
+        console.error('Failed to load featured collections:', error)
+        setFeaturedError('Unable to load featured collections right now.')
+      } finally {
+        setFeaturedLoading(false)
+      }
     }
-  ]
+
+    fetchCollections()
+  }, [])
+
+  const getFallbackImage = (unitId) =>
+    (unitId && COLLECTION_IMAGE_MAP[unitId]) || COLLECTION_IMAGE_MAP.fallback || null
+
+  const resolveObjectImage = (obj) => {
+    if (!obj || typeof obj !== 'object') return null
+    const candidates = [
+      obj.resolved_full_image,
+      obj.resolved_thumbnail,
+      obj.full_image,
+      obj.thumbnail,
+      obj.href
+    ]
+    return candidates.find((url) => typeof url === 'string' && url && !url.includes('hdl.handle.net')) || null
+  }
+
+  const getCollectionImage = (collection) => {
+    const pickFromObjects = (objects = []) => {
+      if (!Array.isArray(objects)) return null
+      for (const obj of objects) {
+        const resolved = resolveObjectImage(obj)
+        if (resolved) return resolved
+      }
+      return null
+    }
+
+    const collectionLevel = pickFromObjects(collection?.digital_objects)
+    if (collectionLevel) return collectionLevel
+
+    if (Array.isArray(collection?.files)) {
+      for (const file of collection.files) {
+        const fileImage = pickFromObjects(file.digital_objects)
+        if (fileImage) return fileImage
+      }
+    }
+
+    return getFallbackImage(collection?.unit_id)
+  }
+
+  const getImageCount = (collection) => {
+    if (!collection) return 0
+    let count = Array.isArray(collection.digital_objects) ? collection.digital_objects.length : 0
+    if (Array.isArray(collection.files)) {
+      for (const file of collection.files) {
+        count += Array.isArray(file.digital_objects) ? file.digital_objects.length : 0
+      }
+    }
+    return count
+  }
+
+  const preparedFeaturedCollections = useMemo(
+    () =>
+      featuredCollections.map((collection) => ({
+        id: collection.id,
+        title: collection.title,
+        description: collection.abstract || collection.scope_content || 'Archive collection',
+        period: collection.date_inclusive || 'Dates unavailable',
+        unitId: collection.unit_id,
+        imageCount: getImageCount(collection),
+        image: getCollectionImage(collection)
+      })),
+    [featuredCollections]
+  )
 
   const stats = [
     { number: "33,000+", label: "Images in Archive" },
@@ -241,36 +322,64 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredCollections.map((collection) => (
-              <div key={collection.id} className="card group hover:shadow-lg transition-shadow duration-300">
-                <div className="aspect-w-16 aspect-h-12 bg-primary-200 rounded-t-xl">
-                  <div className="flex items-center justify-center bg-gradient-to-br from-primary-300 to-primary-400">
-                    <Camera className="h-16 w-16 text-primary-600" />
+          {featuredLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent-600 mx-auto mb-4"></div>
+              <p className="text-primary-600">Loading featured collections…</p>
+            </div>
+          ) : featuredError ? (
+            <div className="text-center py-12 text-primary-600">
+              {featuredError}
+            </div>
+          ) : preparedFeaturedCollections.length === 0 ? (
+            <div className="text-center py-12 text-primary-600">
+              No featured collections available right now.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {preparedFeaturedCollections.map((collection) => (
+                <div key={collection.id} className="card group hover:shadow-lg transition-shadow duration-300 flex flex-col">
+                  <div className="relative h-56 bg-primary-200 rounded-t-xl overflow-hidden">
+                    {collection.image ? (
+                      <img
+                        src={collection.image}
+                        alt={collection.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full bg-gradient-to-br from-primary-100 to-primary-200">
+                        <Camera className="h-12 w-12 text-primary-400" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+                  </div>
+                  <div className="p-6 flex-1 flex flex-col">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-accent-600">{collection.period}</span>
+                      <span className="text-sm text-primary-500">
+                        {collection.imageCount || '—'} images
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-semibold text-primary-900 mb-3 group-hover:text-accent-600 transition-colors duration-200">
+                      {collection.title}
+                    </h3>
+                    <p className="text-primary-600 mb-4 line-clamp-3 flex-1">
+                      {collection.description}
+                    </p>
+                    <Link 
+                      to={collection.id ? `/archive/collections/${collection.id}` : '/collections'}
+                      className="inline-flex items-center text-accent-600 hover:text-accent-700 font-medium mt-auto"
+                    >
+                      View Collection
+                      <ArrowRight className="ml-1 h-4 w-4" />
+                    </Link>
                   </div>
                 </div>
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-accent-600">{collection.period}</span>
-                    <span className="text-sm text-primary-500">{collection.imageCount} images</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-primary-900 mb-3 group-hover:text-accent-600 transition-colors duration-200">
-                    {collection.title}
-                  </h3>
-                  <p className="text-primary-600 mb-4 line-clamp-3">
-                    {collection.description}
-                  </p>
-                  <Link 
-                    to={`/collections/${collection.id}`}
-                    className="inline-flex items-center text-accent-600 hover:text-accent-700 font-medium"
-                  >
-                    View Collection
-                    <ArrowRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           <div className="text-center mt-12">
             <Link 

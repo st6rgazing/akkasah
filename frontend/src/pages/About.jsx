@@ -1,5 +1,8 @@
 import React from 'react'
-import { Camera, Archive, BookOpen, Users, Award, Globe } from 'lucide-react'
+import { Camera, Archive, BookOpen, Users } from 'lucide-react'
+import shamoonImage from '../assets/shamoon.jpg'
+import jonathanImage from '../assets/jonathan.jpg'
+import ibrahimImage from '../assets/ibrahim.jpg'
 
 const About = () => {
   const features = [
@@ -29,21 +32,22 @@ const About = () => {
 
   const team = [
     {
-      name: "Dr. Salwa Mikdadi",
+      name: "Shamoon Zamir",
       role: "Director",
-      description: "Leading the center's mission to preserve and document photographic heritage"
+      image: shamoonImage,
+      description: "Shamoon Zamir is an Associate Professor of Literature and Art History at NYU Abu Dhabi. His research spans literature, photography, art, and intellectual history. He is the author of Dark Voices on W.E.B. Du Bois and The Gift of the Face on Edward S. Curtis, and is currently completing Photography and Citizenship, a study of The Family of Man exhibition and its global reception. Zamir has also published on Helen Levitt and translated Urdu short stories. He previously taught at the University of Chicago, York University, and the University of London."
     },
     {
-      name: "Research Team",
-      role: "Curators & Archivists",
-      description: "Dedicated professionals working on collection development and research"
+      name: "Jon Burr",
+      role: "Digital Collections Management Archivist",
+      image: jonathanImage,
+      description: "Since 2016, Jon Burr has worked on a variety of collections at Akkasah, including the digitization of the Samir Farid collection, a collection of negatives created on the sets of Egyptian films from throughout the 20th century. His professional interests lie primarily in digitization and online access to digital research materials, especially endangered archives that have become inaccessible, overlooked, or are in immediate danger of physical deterioration. Jon holds a MLitt in Archives and Records Management from the University of Dundee."
     },
     {
-      name: "Digital Team",
-      role: "Technical Specialists",
-      description: "Ensuring proper digitization and preservation of photographic materials"
-    }
-  ]
+      name: "Ibrahim Mohamed Ali",
+      role: "Archivist",
+      image: ibrahimImage,
+      description: "Ibrahim Mohamed Ali is the Lead Archivist at al Mawrid, NYU Abu Dhabi, where he oversees the processing, cataloging, and preservation of the Arab Art Archive collections. His work focuses on developing cataloging frameworks for Arabic-language archives to enhance accessibility. Previously, he worked on major preservation projects, including the Ministry of Antiquities glass negative archives and the Attaya Gaddis studio archive, and served at the Grand Egyptian Museum Conservation Center. He holds an MA in Museum Studies from George Washington University and a BA in Conservation from Cairo University."}]
 
   return (
     <div className="min-h-screen">
@@ -148,8 +152,16 @@ const About = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {team.map((member, index) => (
               <div key={index} className="card p-8 text-center">
-                <div className="w-20 h-20 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="h-8 w-8 text-accent-600" />
+                <div className="w-20 h-20 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
+                  {member.image ? (
+                    <img 
+                      src={member.image} 
+                      alt={member.name}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <Users className="h-8 w-8 text-accent-600" />
+                  )}
                 </div>
                 <h3 className="text-xl font-semibold text-primary-900 mb-2">
                   {member.name}
@@ -166,61 +178,6 @@ const About = () => {
         </div>
       </section>
 
-      {/* Values Section */}
-      <section className="py-20 bg-primary-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary-900 mb-4">
-              Our Values
-            </h2>
-            <p className="text-xl text-primary-600 max-w-3xl mx-auto">
-              The principles that guide our work and mission
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Archive className="h-8 w-8 text-accent-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-primary-900 mb-2">Preservation</h3>
-              <p className="text-primary-600 text-sm">
-                Ensuring the long-term preservation of photographic heritage
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Globe className="h-8 w-8 text-accent-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-primary-900 mb-2">Accessibility</h3>
-              <p className="text-primary-600 text-sm">
-                Making collections accessible to scholars and the public
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="h-8 w-8 text-accent-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-primary-900 mb-2">Scholarship</h3>
-              <p className="text-primary-600 text-sm">
-                Supporting research and academic excellence
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="h-8 w-8 text-accent-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-primary-900 mb-2">Collaboration</h3>
-              <p className="text-primary-600 text-sm">
-                Working with institutions and individuals worldwide
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Contact Section */}
       <section className="py-20 bg-white">

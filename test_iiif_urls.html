@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IIIF URL Quality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        .url-container {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .url-container h3 {
+            margin-top: 0;
+            color: #0066cc;
+        }
+        .url-container a {
+            display: block;
+            word-break: break-all;
+            color: #0066cc;
+            text-decoration: none;
+            padding: 5px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            margin-top: 5px;
+        }
+        .url-container a:hover {
+            background: #e0e0e0;
+        }
+        .image-preview {
+            margin-top: 10px;
+            max-width: 100%;
+        }
+        .image-preview img {
+            max-width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>IIIF URL Quality Test</h1>
+    <p>Click on each URL to test the image quality. Compare them and tell me which number(s) look best!</p>
+    
+    <div class="url-container">
+        <h3>1. Full size, native quality</h3>
+        <a href="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/native.jpg" target="_blank">
+            https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/native.jpg
+        </a>
+        <div class="image-preview">
+            <img src="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/native.jpg" alt="Preview 1" onerror="this.style.display='none'">
+        </div>
+    </div>
+    
+    <div class="url-container">
+        <h3>2. Full size, default quality</h3>
+        <a href="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/default.jpg" target="_blank">
+            https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/default.jpg
+        </a>
+        <div class="image-preview">
+            <img src="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/default.jpg" alt="Preview 2" onerror="this.style.display='none'">
+        </div>
+    </div>
+    
+    <div class="url-container">
+        <h3>3. Full size, color quality</h3>
+        <a href="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/color.jpg" target="_blank">
+            https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/color.jpg
+        </a>
+        <div class="image-preview">
+            <img src="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/color.jpg" alt="Preview 3" onerror="this.style.display='none'">
+        </div>
+    </div>
+    
+    <div class="url-container">
+        <h3>4. Max 2000px width, native quality</h3>
+        <a href="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/2000,/0/native.jpg" target="_blank">
+            https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/2000,/0/native.jpg
+        </a>
+        <div class="image-preview">
+            <img src="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/2000,/0/native.jpg" alt="Preview 4" onerror="this.style.display='none'">
+        </div>
+    </div>
+    
+    <div class="url-container">
+        <h3>5. Max 2000px width, default quality</h3>
+        <a href="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/2000,/0/default.jpg" target="_blank">
+            https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/2000,/0/default.jpg
+        </a>
+        <div class="image-preview">
+            <img src="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/2000,/0/default.jpg" alt="Preview 5" onerror="this.style.display='none'">
+        </div>
+    </div>
+    
+    <div class="url-container">
+        <h3>6. Max 3000px width, native quality</h3>
+        <a href="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/3000,/0/native.jpg" target="_blank">
+            https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/3000,/0/native.jpg
+        </a>
+        <div class="image-preview">
+            <img src="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/3000,/0/native.jpg" alt="Preview 6" onerror="this.style.display='none'">
+        </div>
+    </div>
+    
+    <div class="url-container">
+        <h3>7. Max 3000px width, default quality</h3>
+        <a href="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/3000,/0/default.jpg" target="_blank">
+            https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/3000,/0/default.jpg
+        </a>
+        <div class="image-preview">
+            <img src="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/3000,/0/default.jpg" alt="Preview 7" onerror="this.style.display='none'">
+        </div>
+    </div>
+    
+    <div class="url-container">
+        <h3>8. Exact 2048x2048, native quality</h3>
+        <a href="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/!2048,2048/0/native.jpg" target="_blank">
+            https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/!2048,2048/0/native.jpg
+        </a>
+        <div class="image-preview">
+            <img src="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/!2048,2048/0/native.jpg" alt="Preview 8" onerror="this.style.display='none'">
+        </div>
+    </div>
+    
+    <div class="url-container">
+        <h3>9. Exact 2048x2048, default quality</h3>
+        <a href="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/!2048,2048/0/default.jpg" target="_blank">
+            https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/!2048,2048/0/default.jpg
+        </a>
+        <div class="image-preview">
+            <img src="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/!2048,2048/0/default.jpg" alt="Preview 9" onerror="this.style.display='none'">
+        </div>
+    </div>
+    
+    <div class="url-container">
+        <h3>10. Full size, PNG (lossless)</h3>
+        <a href="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/native.png" target="_blank">
+            https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/native.png
+        </a>
+        <div class="image-preview">
+            <img src="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/native.png" alt="Preview 10" onerror="this.style.display='none'">
+        </div>
+    </div>
+    
+    <div class="url-container">
+        <h3>11. Max 3000px, PNG (lossless)</h3>
+        <a href="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/3000,/0/native.png" target="_blank">
+            https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/3000,/0/native.png
+        </a>
+        <div class="image-preview">
+            <img src="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/3000,/0/native.png" alt="Preview 11" onerror="this.style.display='none'">
+        </div>
+    </div>
+    
+    <div class="url-container">
+        <h3>12. Square region, full size, native</h3>
+        <a href="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/square/full/0/native.jpg" target="_blank">
+            https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/square/full/0/native.jpg
+        </a>
+        <div class="image-preview">
+            <img src="https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/square/full/0/native.jpg" alt="Preview 12" onerror="this.style.display='none'">
+        </div>
+    </div>
+    
+    <div style="background: white; padding: 20px; margin-top: 20px; border-radius: 5px;">
+        <h2>Instructions:</h2>
+        <ol>
+            <li>Click on each URL above to open the full-size image in a new tab</li>
+            <li>Right-click the image and "Save Image As" to download it</li>
+            <li>Compare the file sizes and visual quality</li>
+            <li>Tell me which URL number(s) look best!</li>
+        </ol>
+        <p><strong>Note:</strong> The preview images above are small thumbnails. Click the links to see the full quality!</p>
+    </div>
+</body>
+</html>
+
+
+
+
+

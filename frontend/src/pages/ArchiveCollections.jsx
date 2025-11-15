@@ -11,6 +11,7 @@ const ArchiveCollections = () => {
   const [sortOrder, setSortOrder] = useState('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
   const itemsPerPage = 12
 
   useEffect(() => {
@@ -20,6 +21,7 @@ const ArchiveCollections = () => {
   const fetchCollections = async () => {
     try {
       setLoading(true)
+      setError(null)
       const params = {
         skip: (currentPage - 1) * itemsPerPage,
         limit: itemsPerPage,
@@ -27,12 +29,35 @@ const ArchiveCollections = () => {
         sort_by: sortBy,
         sort_order: sortOrder
       }
-      const data = await archiveService.getAllCollections(params)
-      setCollections(data)
-      setTotalPages(Math.ceil(data.length / itemsPerPage))
+      console.log('Fetching collections with params:', params)
+      const result = await archiveService.getAllCollections(params)
+      console.log('Received collections data:', result)
+      
+      const collectionsData = Array.isArray(result?.data)
+        ? result.data
+        : Array.isArray(result)
+          ? result
+          : []
+      const totalCount = Number.isFinite(result?.total) ? result.total : collectionsData.length
+      
+      console.log('Number of collections:', collectionsData.length)
+      console.log('Total collections:', totalCount)
+      
+      if (Array.isArray(collectionsData)) {
+        setCollections(collectionsData)
+        setTotalCount(totalCount)
+        // Calculate total pages based on total count
+        setTotalPages(Math.ceil(totalCount / itemsPerPage))
+      } else {
+        console.error('Expected array but got:', typeof collectionsData, collectionsData)
+        setCollections([])
+        setTotalPages(1)
+        setTotalCount(0)
+      }
     } catch (err) {
       setError('Failed to fetch collections')
       console.error('Error fetching collections:', err)
+      setCollections([])
     } finally {
       setLoading(false)
     }
@@ -214,37 +239,97 @@ const ArchiveCollections = () => {
           ))}
         </div>
 
-        {/* Pagination */}
+        {/* Improved Pagination */}
         {totalPages > 1 && (
-          <div className="mt-8 flex justify-center">
-            <div className="flex space-x-2">
+          <div className="mt-8 flex flex-col items-center gap-4">
+            <div className="flex items-center justify-center gap-2 flex-wrap">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-2 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
               >
-                Previous
+                ← Previous
               </button>
-              {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i + 1}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`px-3 py-2 border rounded text-sm ${
-                    currentPage === i + 1
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+              
+              {/* Show page numbers with ellipsis for large page counts */}
+              {totalPages <= 7 ? (
+                // Show all pages if 7 or fewer
+                [...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                      currentPage === i + 1
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))
+              ) : (
+                // Show first, last, current, and neighbors
+                <>
+                  {currentPage > 2 && (
+                    <>
+                      <button
+                        onClick={() => setCurrentPage(1)}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                      >
+                        1
+                      </button>
+                      {currentPage > 3 && <span className="px-2 text-gray-400">...</span>}
+                    </>
+                  )}
+                  {[...Array(Math.min(5, totalPages))].map((_, i) => {
+                    let pageNum;
+                    if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    if (pageNum < 1 || pageNum > totalPages) return null;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                          currentPage === pageNum
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                  {currentPage < totalPages - 2 && (
+                    <>
+                      {currentPage < totalPages - 3 && <span className="px-2 text-gray-400">...</span>}
+                      <button
+                        onClick={() => setCurrentPage(totalPages)}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                      >
+                        {totalPages}
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+              
               <button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-2 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
               >
-                Next
+                Next →
               </button>
+            </div>
+            
+            <div className="text-sm text-gray-600">
+              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} collections
             </div>
           </div>
         )}

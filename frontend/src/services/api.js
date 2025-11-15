@@ -2,6 +2,182 @@ import axios from 'axios'
 import { secureApiCall, validateInput, clientRateLimit } from '../utils/security'
 
 const API_BASE_URL = '/api'
+const IIIF_IMAGE_BASE = 'https://sites.dlib.nyu.edu/viewer/api/image'
+
+const isHandleUrl = (url) => typeof url === 'string' && url.includes('hdl.handle.net')
+
+const normalizeImageIdentifier = (imageId) => {
+  if (!imageId || typeof imageId !== 'string') return null
+  const withoutQuery = imageId.split('#')[0].split('?')[0].trim()
+  if (!withoutQuery) return null
+  const stripped = withoutQuery.replace(/^\/+/, '').replace(/\/+$/, '')
+  return stripped.replace(/\/{2,}/g, '/')
+}
+
+const appendPageSegment = (identifier, page = 1) => {
+  if (!identifier) return null
+  const sanitized = identifier.replace(/\/+$/, '')
+  if (/\/\d+$/.test(sanitized)) {
+    return sanitized
+  }
+  const pageNumber = Number.isInteger(page) && page > 0 ? page : 1
+  return `${sanitized}/${pageNumber}`
+}
+
+const buildIiifFullUrl = (imageId, page = 1) => {
+  if (!imageId) return null
+  const cleanId = normalizeImageIdentifier(imageId)
+  if (!cleanId) return null
+  const identifier = appendPageSegment(cleanId, page)
+  return `${IIIF_IMAGE_BASE}/${identifier}/full/full/0/default.jpg`
+}
+
+const buildIiifThumbUrl = (imageId, page = 1) => {
+  if (!imageId) return null
+  const cleanId = normalizeImageIdentifier(imageId)
+  if (!cleanId) return null
+  const identifier = appendPageSegment(cleanId, page)
+  return `${IIIF_IMAGE_BASE}/${identifier}/full/!300,300/0/default.jpg`
+}
+
+const extractImageIdFromUrl = (url) => {
+  if (!url || typeof url !== 'string') return null
+  try {
+    const { pathname } = new URL(url)
+    const segments = pathname.split('/').filter(Boolean)
+    const viewerIndex = segments.indexOf('viewer')
+    if (viewerIndex === -1) return null
+    const afterViewer = segments.slice(viewerIndex + 1)
+    if (afterViewer.length === 0) return null
+
+    const buildIdentifier = (typeSegment, idSegment, pageSegment) => {
+      if (!typeSegment || !idSegment) return null
+      const base = `${typeSegment}/${idSegment}`
+      if (pageSegment && /^\d+$/.test(pageSegment)) {
+        return `${base}/${pageSegment}`
+      }
+      return base
+    }
+
+    if (afterViewer[0] === 'api' && afterViewer[1] === 'image') {
+      const typeSegment = afterViewer[2]
+      const idSegment = afterViewer[3]
+      const pageSegment = afterViewer[4] && /^\d+$/.test(afterViewer[4]) ? afterViewer[4] : null
+      return buildIdentifier(typeSegment, idSegment, pageSegment)
+    }
+
+    const typeSegment = afterViewer[0]
+    const idSegment = afterViewer[1]
+    const pageSegment = afterViewer[2] && /^\d+$/.test(afterViewer[2]) ? afterViewer[2] : null
+    return buildIdentifier(typeSegment, idSegment, pageSegment)
+  } catch {
+    return null
+  }
+}
+
+const normalizeDigitalObject = (obj = {}) => {
+  if (!obj || typeof obj !== 'object') return obj
+  const normalized = { ...obj }
+  
+  const rawImageId =
+    normalized.image_id ||
+    extractImageIdFromUrl(normalized.full_image) ||
+    extractImageIdFromUrl(normalized.thumbnail) ||
+    extractImageIdFromUrl(normalized.href)
+  const imageId = normalizeImageIdentifier(rawImageId)
+  const pageNumber = 1
+  
+  if (imageId) {
+    normalized.iiif_identifier = imageId
+  }
+  
+  let resolvedFull = imageId ? buildIiifFullUrl(imageId, pageNumber) : null
+  
+  if (!resolvedFull) {
+    if (normalized.full_image && !isHandleUrl(normalized.full_image)) {
+      resolvedFull = normalized.full_image
+    } else if (normalized.href && !isHandleUrl(normalized.href) && !normalized.href.includes('?urlappend=/mode/thumb')) {
+      resolvedFull = normalized.href
+    }
+  }
+  
+  let resolvedThumb = imageId ? buildIiifThumbUrl(imageId, pageNumber) : null
+  
+  if (
+    !resolvedThumb &&
+    normalized.thumbnail &&
+    !isHandleUrl(normalized.thumbnail) &&
+    !normalized.thumbnail.includes('?urlappend=/mode/thumb')
+  ) {
+    resolvedThumb = normalized.thumbnail
+  }
+  
+  if (!resolvedThumb && resolvedFull && !isHandleUrl(resolvedFull)) {
+    resolvedThumb = resolvedFull
+  }
+  
+  normalized.resolved_full_image = resolvedFull || null
+  normalized.resolved_thumbnail = resolvedThumb || null
+  
+  return normalized
+}
+
+const normalizeDigitalObjects = (objects) => {
+  if (!objects) return []
+  let parsed = objects
+  if (typeof objects === 'string') {
+    try {
+      parsed = JSON.parse(objects)
+    } catch {
+      return []
+    }
+  }
+  if (!Array.isArray(parsed)) return []
+  return parsed.map(normalizeDigitalObject)
+}
+
+const normalizeCollectionImages = (collection) => {
+  if (!collection || typeof collection !== 'object') return collection
+  
+  const normalized = { ...collection }
+  normalized.digital_objects = normalizeDigitalObjects(collection.digital_objects)
+  
+  let files = collection.files
+  if (typeof files === 'string') {
+    try {
+      files = JSON.parse(files)
+    } catch {
+      files = []
+    }
+  }
+  if (Array.isArray(files)) {
+    normalized.files = files.map((file) => ({
+      ...file,
+      digital_objects: normalizeDigitalObjects(file?.digital_objects)
+    }))
+  } else {
+    normalized.files = []
+  }
+  
+  let series = collection.series
+  if (typeof series === 'string') {
+    try {
+      series = JSON.parse(series)
+    } catch {
+      series = []
+    }
+  }
+  if (Array.isArray(series)) {
+    normalized.series = series.map((item) => ({
+      ...item,
+      digital_objects: normalizeDigitalObjects(item?.digital_objects)
+    }))
+  } else {
+    normalized.series = []
+  }
+  
+  return normalized
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -58,7 +234,7 @@ api.interceptors.response.use(
       })
     }
     
-    return response.data
+    return response
   },
   (error) => {
     // Handle different types of errors securely
@@ -87,7 +263,7 @@ export const collectionService = {
   getAllCollections: async () => {
     try {
       const response = await api.get('/collections')
-      return response
+      return response.data
     } catch (error) {
       // Return mock data if API is not available
       return getMockCollections()
@@ -97,7 +273,7 @@ export const collectionService = {
   getCollectionById: async (id) => {
     try {
       const response = await api.get(`/collections/${id}`)
-      return response
+      return response.data
     } catch (error) {
       // Return mock data if API is not available
       return getMockCollectionById(id)
@@ -107,7 +283,7 @@ export const collectionService = {
   searchCollections: async (query) => {
     try {
       const response = await api.get('/collections/search', { params: { q: query } })
-      return response
+      return response.data
     } catch (error) {
       // Return mock data if API is not available
       return getMockSearchResults(query)
@@ -120,7 +296,7 @@ export const searchService = {
   search: async (params) => {
     try {
       const response = await api.post('/search', params)
-      return response
+      return response.data
     } catch (error) {
       // Return mock data if API is not available
       return getMockSearchResults(params.query)
@@ -130,6 +306,9 @@ export const searchService = {
 
 // Archive Service
 export const archiveService = {
+  // Normalize collection response by resolving handle thumbnails
+  _normalizeCollection: (collection) => normalizeCollectionImages(collection),
+
   // Get all archive collections
   getAllCollections: async (params = {}) => {
     try {
@@ -137,19 +316,18 @@ export const archiveService = {
       const response = await api.get('/archive/collections', { params })
       console.log('API response:', response)
       console.log('API response data:', response.data)
-      // The backend returns data directly as the response, not wrapped in data property
-      // Check if response.data exists and is an array, otherwise use response directly
-      if (response.data && Array.isArray(response.data)) {
-        return response.data
-      } else if (Array.isArray(response)) {
-        return response
-      } else {
-        console.error('Unexpected response format:', response)
-        return []
+      
+      // Return data and metadata
+      const data = Array.isArray(response.data) ? response.data : []
+      const normalizedData = data.map((collection) => normalizeCollectionImages(collection))
+
+      return {
+        data: normalizedData,
+        total: response.headers['x-total-count'] ? parseInt(response.headers['x-total-count']) : normalizedData.length
       }
     } catch (error) {
       console.error('Error fetching archive collections:', error)
-      return []
+      return { data: [], total: 0 }
     }
   },
 
@@ -162,9 +340,9 @@ export const archiveService = {
       // The backend returns data directly as the response, not wrapped in data property
       // Check if response.data exists and has an id, otherwise use response directly
       if (response.data && response.data.id) {
-        return response.data
-      } else if (response.id) {
-        return response
+        return normalizeCollectionImages(response.data)
+      } else if (response.data) {
+        return normalizeCollectionImages(response.data)
       } else {
         console.error('Unexpected response format:', response)
         return null
@@ -179,7 +357,7 @@ export const archiveService = {
   getCollectionSeries: async (collectionId) => {
     try {
       const response = await api.get(`/archive/collections/${collectionId}/series`)
-      return response.data || response
+      return response.data || []
     } catch (error) {
       console.error('Error fetching collection series:', error)
       return []
@@ -190,7 +368,7 @@ export const archiveService = {
   getSeriesById: async (id) => {
     try {
       const response = await api.get(`/archive/series/${id}`)
-      return response.data || response
+      return response.data || null
     } catch (error) {
       console.error('Error fetching series:', error)
       return null

@@ -9,7 +9,6 @@ import Search from './pages/Search'
 import CollectionDetail from './pages/CollectionDetail'
 import ArchiveCollections from './pages/ArchiveCollections'
 import ArchiveCollectionDetail from './pages/ArchiveCollectionDetail'
-import AdvancedSearch from './pages/AdvancedSearch'
 import Contact from './pages/Contact'
 import FAQ from './pages/FAQ'
 
@@ -25,7 +24,6 @@ function App() {
             <Route path="/collections/:id" element={<CollectionDetail />} />
             <Route path="/archive/collections" element={<ArchiveCollections />} />
             <Route path="/archive/collections/:id" element={<ArchiveCollectionDetail />} />
-            <Route path="/archive/search" element={<AdvancedSearch />} />
             <Route path="/about" element={<About />} />
             <Route path="/search" element={<Search />} />
             <Route path="/contact" element={<Contact />} />

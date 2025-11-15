@@ -1,0 +1,56 @@
+IIIF URL Quality Test Script
+================================================================================
+
+Testing Handle.net URL: http://hdl.handle.net/2333.1/h9w0w4wd
+
+Found manifest URL: https://sites.dlib.nyu.edu/viewer/api/image/photos/AD_MC_061_ref1/1/info.json
+
+Found IIIF service URL: https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2
+
+================================================================================
+TEST THESE URLS (copy and paste in browser to test quality):
+================================================================================
+
+1. Full size, native quality
+   https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/native.jpg
+
+2. Full size, default quality
+   https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/default.jpg
+
+3. Full size, color quality
+   https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/color.jpg
+
+4. Max 2000px width, native quality
+   https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/2000,/0/native.jpg
+
+5. Max 2000px width, default quality
+   https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/2000,/0/default.jpg
+
+6. Max 3000px width, native quality
+   https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/3000,/0/native.jpg
+
+7. Max 3000px width, default quality
+   https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/3000,/0/default.jpg
+
+8. Exact 2048x2048, native quality
+   https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/!2048,2048/0/native.jpg
+
+9. Exact 2048x2048, default quality
+   https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/!2048,2048/0/default.jpg
+
+10. Full size, PNG (lossless)
+   https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/full/0/native.png
+
+11. Max 3000px, PNG (lossless)
+   https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/full/3000,/0/native.png
+
+12. Square region, full size, native
+   https://image1.dlib.nyu.edu:8183/iiif/2/photo%2FAD_MC_061_ref1%2FAD_MC_061_ref1_n000001_d.jp2/square/full/0/native.jpg
+
+================================================================================
+Instructions:
+1. Copy each URL above and paste it in your browser
+2. Right-click the image and 'Save Image As' to download
+3. Check the file size and visual quality
+4. Tell me which URL number(s) look best!
+================================================================================

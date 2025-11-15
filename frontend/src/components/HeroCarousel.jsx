@@ -3,6 +3,9 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import hero1 from '../assets/hero-image.jpg'
 import hero2 from '../assets/hero-image2.jpg'
 import hero3 from '../assets/hero-image3.jpg'
+import hero4 from '../assets/hero-image4.jpg'
+import hero5 from '../assets/hero-image5.jpg'
+import hero6 from '../assets/hero-image6.jpg'
 
 const HeroCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -25,6 +28,24 @@ const HeroCarousel = () => {
       image: hero3,
       title: "Digitized Family Archives",
       subtitle: "Access digitized photographic albums and family collections from across the Middle East and North Africa."
+    },
+    {
+      id: 4,
+      image: hero4,
+      title: "Photo Albums in Focus",
+      subtitle: "Collaborations with NYUAD Library surface rare albums that capture voyages, rituals, and everyday memories."
+    },
+    {
+      id: 5,
+      image: hero5,
+      title: "Contemporary Documentary Projects",
+      subtitle: "Commissioned photographers share new work about life across the UAE, the Gulf, and the wider region."
+    },
+    {
+      id: 6,
+      image: hero6,
+      title: "Living Archives and Community Voices",
+      subtitle: "Stories from artists, families, and researchers continue to expand Akkasah’s growing visual repository."
     }
   ]
 

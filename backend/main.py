@@ -1,9 +1,15 @@
-from fastapi import FastAPI, HTTPException, Depends, Query, Request, Response
+from fastapi import FastAPI, HTTPException, Depends, Query, Request, Response, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
+import os
+import hashlib
+from urllib.parse import urlparse
+import re
+import json
+import requests
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import uvicorn
@@ -58,7 +64,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # CORS middleware with security restrictions
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3003", "http://127.0.0.1:3003"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3003", "http://127.0.0.1:3003", "http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -106,6 +112,154 @@ async def log_requests(request: Request, call_next):
 # Initialize services
 collection_service = CollectionService()
 search_service = SearchService()
+
+# Serve local static files (downloaded images)
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+os.makedirs(static_dir, exist_ok=True)
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+def _hash_href(href: str) -> str:
+    return hashlib.sha1(href.encode("utf-8")).hexdigest()
+
+def _ext_from_href(href: str) -> str:
+    path = urlparse(href).path
+    ext = os.path.splitext(path)[1].lower() or ".jpg"
+    # Normalize common extensions
+    if ext in [".jpeg", ".jpg", ".png", ".webp", ".tif", ".tiff"]:
+        return ext if ext != ".jpeg" else ".jpg"
+    return ".jpg"
+
+@app.get("/api/image")
+async def get_image(href: str):
+    """Return local static image if present; otherwise redirect to remote href.
+    Frontend can use /api/image?href=<encoded original url> as src.
+    """
+    try:
+        file_hash = _hash_href(href)
+        ext = _ext_from_href(href)
+        local_path = os.path.join(static_dir, "images", f"{file_hash}{ext}")
+        if os.path.exists(local_path):
+            # Serve from mounted static
+            return RedirectResponse(url=f"/static/images/{file_hash}{ext}")
+        # Fallback to remote
+        return RedirectResponse(url=href)
+    except Exception:
+        return RedirectResponse(url=href)
+
+@app.get("/api/resolve-image")
+async def resolve_image(href: str, max_width: int = 800):
+    """Resolve a Handle/viewer URL to a direct image URL (IIIF when available).
+    Uses the same logic as EAD parser to extract IIIF manifest from div.dlts_image_map.
+    Returns JSON with the resolved URL or redirects to it.
+    """
+    try:
+        from bs4 import BeautifulSoup
+        
+        size_segment = (
+            "full"
+            if max_width is None or max_width <= 0
+            else f"!{max_width},{max_width}"
+        )
+        
+        # 1) Follow redirects from handle to viewer
+        resp = requests.get(href, timeout=10, allow_redirects=True)
+        final_url = resp.url
+        html = resp.text
+        soup = BeautifulSoup(html, 'html.parser')
+        
+        # 2) Find div.dlts_image_map and extract data-manifest (same as EAD parser)
+        image_map_div = soup.find('div', class_='dlts_image_map')
+        if not image_map_div:
+            # Try alternative selectors
+            image_map_div = soup.find('div', {'class': re.compile(r'dlts_image_map', re.I)})
+        if not image_map_div:
+            # Try by id
+            image_map_div = soup.find('div', id=re.compile(r'image', re.I))
+        
+        if image_map_div:
+            data_manifest = image_map_div.get('data-manifest')
+            if data_manifest:
+                try:
+                    # Fetch the IIIF manifest to get the actual service URL (same logic as EAD parser)
+                    manifest_response = requests.get(data_manifest, timeout=10)
+                    if manifest_response.status_code == 200:
+                        manifest_data = manifest_response.json()
+                        # Extract the @id which is the IIIF service base URL
+                        # Note: In some IIIF implementations, @id might be the manifest URL itself
+                        # but for NYU's setup, it appears to be the service base URL
+                        iiif_service_url = manifest_data.get('@id')
+                        if iiif_service_url:
+                            # Construct IIIF URL for thumbnail (same format as EAD parser)
+                            iiif_url = f"{iiif_service_url}/full/{size_segment}/0/default.jpg"
+                            return RedirectResponse(url=iiif_url, status_code=307)
+                        else:
+                            # Try to extract service URL from resource structure (Presentation API v2)
+                            try:
+                                sequences = manifest_data.get('sequences', [])
+                                if sequences:
+                                    canvases = sequences[0].get('canvases', [])
+                                    if canvases:
+                                        images = canvases[0].get('images', [])
+                                        if images:
+                                            resource = images[0].get('resource', {})
+                                            service = resource.get('service', {})
+                                            service_id = service.get('@id') or service.get('id')
+                                            if service_id:
+                                                iiif_url = f"{service_id}/full/{size_segment}/0/default.jpg"
+                                                return RedirectResponse(url=iiif_url, status_code=307)
+                            except Exception:
+                                pass
+                except Exception as e:
+                    logger.error(f"Error fetching IIIF manifest: {str(e)}")
+            
+            # Fallback: Try data-uri if data-manifest didn't work
+            data_uri = image_map_div.get('data-uri')
+            if data_uri:
+                # If it's a JP2, try to construct IIIF URL
+                if data_uri.lower().endswith('.jp2'):
+                    iiif_base = data_uri.rsplit('.jp2', 1)[0]
+                    iiif_url = f"{iiif_base}/full/{size_segment}/0/default.jpg"
+                    return RedirectResponse(url=iiif_url, status_code=307)
+                else:
+                    # Use data-uri directly
+                    return RedirectResponse(url=data_uri, status_code=307)
+        
+        # 3) Fallback: Try to find manifest URL in HTML using regex
+        manifest_url = None
+        candidates = re.findall(r'https?://[^"\']+manifest[^"\']+\.json', html, flags=re.IGNORECASE)
+        if candidates:
+            manifest_url = candidates[0]
+        else:
+            candidates = re.findall(r'https?://[^"\']+iiif[^"\']+manifest[^"\']+\.json', html, flags=re.IGNORECASE)
+            if candidates:
+                manifest_url = candidates[0]
+
+        if manifest_url:
+            try:
+                m = requests.get(manifest_url, timeout=10)
+                m.raise_for_status()
+                data = m.json()
+                # Extract @id from manifest
+                iiif_service_url = data.get('@id')
+                if iiif_service_url:
+                    iiif_url = f"{iiif_service_url}/full/{size_segment}/0/default.jpg"
+                    return RedirectResponse(url=iiif_url)
+            except Exception as e:
+                logger.error(f"Error processing manifest: {str(e)}")
+
+        # 4) Fallback: Try to find direct image in HTML
+        direct_candidates = re.findall(r'https?://[^"\']+\.(?:jpg|jpeg|png|webp|tif|tiff)(?:\?[^"\']*)?', html, flags=re.IGNORECASE)
+        if direct_candidates:
+            return RedirectResponse(url=direct_candidates[0], status_code=307)
+
+        # 5) Last resort: Return thumbnail mode URL
+        fallback_url = href if '?urlappend=/mode/thumb' in href else f"{href}?urlappend=/mode/thumb"
+        return RedirectResponse(url=fallback_url, status_code=307)
+    except Exception as e:
+        logger.error(f"Error resolving image {href}: {str(e)}")
+        # Fallback to thumbnail mode
+        fallback_url = href if '?urlappend=/mode/thumb' in href else f"{href}?urlappend=/mode/thumb"
+        return RedirectResponse(url=fallback_url, status_code=307)
 
 @app.get("/api/")
 async def root():
@@ -247,6 +401,9 @@ async def get_archive_collections(
         if title_search:
             query = query.filter(ArchiveCollection.title.ilike(f"%{title_search}%"))
         
+        # Get total count for pagination
+        total_count = query.count()
+        
         # Order by collections with digital objects first, then by id
         from sqlalchemy import case, func
         collections = query.order_by(
@@ -257,7 +414,7 @@ async def get_archive_collections(
             ArchiveCollection.id
         ).offset(skip).limit(limit).all()
         
-        # For each collection, get files with digital objects
+        # For each collection, get files with digital objects (limit for performance)
         for collection in collections:
             files = db.query(ArchiveFile).join(ArchiveSeries).filter(
                 ArchiveSeries.collection_id == collection.id,
@@ -293,6 +450,7 @@ async def get_archive_collections(
 @app.get("/api/archive/collections/{collection_id}", response_model=ArchiveCollectionDetail)
 async def get_archive_collection(
     collection_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
     """Get a specific archive collection with its series"""
@@ -311,6 +469,49 @@ async def get_archive_collection(
         ).all()
         
         collection.series = series
+        
+        # Process images in background if needed (check if any image-service URLs don't have full_image)
+        needs_processing = False
+        if collection.digital_objects:
+            for obj in collection.digital_objects:
+                if obj.get('role', '').lower() == 'image-service' and obj.get('href'):
+                    if not obj.get('full_image') or obj.get('full_image') == obj.get('href'):
+                        needs_processing = True
+                        break
+        
+        # Process images in background if needed
+        if needs_processing:
+            from ead_parser import EADParser
+            parser = EADParser()
+            
+            def process_images():
+                try:
+                    db_session = next(get_db())
+                    coll = db_session.query(ArchiveCollection).filter(
+                        ArchiveCollection.id == collection_id
+                    ).first()
+                    if coll and coll.digital_objects:
+                        updated = False
+                        for obj in coll.digital_objects:
+                            if obj.get('role', '').lower() == 'image-service' and obj.get('href'):
+                                if not obj.get('full_image') or obj.get('full_image') == obj.get('href'):
+                                    result = parser._process_image_service_url(obj['href'], coll.title or '')
+                                    obj.update({
+                                        'image_id': result.get('image_id'),
+                                        'full_image': result.get('full_image'),
+                                        'thumbnail': result.get('thumbnail'),
+                                        'back_image_id': result.get('back_image_id')
+                                    })
+                                    updated = True
+                        if updated:
+                            coll.digital_objects = coll.digital_objects
+                            db_session.commit()
+                    db_session.close()
+                except Exception as e:
+                    logger.error(f"Error processing images in background: {str(e)}")
+            
+            background_tasks.add_task(process_images)
+        
         return collection
     except HTTPException:
         raise
